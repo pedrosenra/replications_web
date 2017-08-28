@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['table']});
+      google.charts.load('current', {'packages':['corechart', 'controls']});
+
+      google.charts.setOnLoadCallback(drawTable);
+
+      function drawTable() {
+
+        var data = new google.visualization.DataTable();
+        //importing data
+        {% for x in headers %}
+            data.addColumn('{{ x[1] }}', '{{ x[0] }}');
+        {% endfor %}
+
+        {% for x in replications %}
+            data.addRows([{{ x|safe}}]);
+        {% endfor %}
+
+        var dashboard = new google.visualization.Dashboard(document.querySelector('#dashboard'));
+
+        var stringFilter = new google.visualization.ControlWrapper({
+            controlType: 'StringFilter',
+            containerId: 'string_filter_div',
+            options: {
+                filterColumnIndex: 0,
+                ui: {'label': 'VM Name',
+                    'labelStacking': 'vertical'}
+            }
+        });
+        var control = new google.visualization.ControlWrapper({
+            containerId: 'control_div',
+            controlType: 'CategoryFilter',
+            options: {
+                filterColumnIndex: 2,
+                ui: {'label': 'Replication State',
+                    'labelStacking': 'vertical'}
+            }
+        });
+
+        var table = new google.visualization.ChartWrapper({
+            chartType: 'Table',
+            containerId: 'table_div',
+            options: {
+                showRowNumber: true,
+            }
+        });
+
+        dashboard.bind([stringFilter,control], table);
+        dashboard.draw(data);
+      }
+     //google.load('visualization', '1', {packages:['controls'], callback: drawTable});
+    </script>
+    <div id="dashboard">
+        <div id="string_filter_div"></div>
+        <div id="control_div"></div>
+        <div id="table_div"></div>
+    </div>
+{% endblock %}

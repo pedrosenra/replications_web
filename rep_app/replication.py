@@ -1,11 +1,8 @@
-import argparse
 import requests
 import base64
-#from tabulate import tabulate
 import xml.etree.ElementTree as ET
 from datetime import datetime
-import csv
-import getpass
+
 
 
 def session_auth(username, password, api_url, org):
@@ -38,8 +35,6 @@ def get_replications(authtoken, org1):
     i = 1
     replicas = []
     vm_cgid = []
-    #vm_cgid.append(['vm_name', 'replication_href', 'replicationState', 'RPO(Hours)', 'RPO violation',
-    #                'HTTP status_code', 'TransferStartTime', 'TransferSeconds', 'TransferBytes'])
     headers = {'Accept': 'application/*+xml;version=5.6', 'x-vcloud-authorization': authtoken}
 
     while (True):
@@ -48,7 +43,6 @@ def get_replications(authtoken, org1):
         r = requests.get(url, headers=headers)
         xml_aux = ET.fromstring(r.content)
         if (len(xml_aux) == 1):
-            #print ('exiting...')
             break
         for child in xml_aux:
             if 'application/vnd.vmware.hcs.replicationGroup+xml' in child.attrib['type']:
@@ -56,7 +50,7 @@ def get_replications(authtoken, org1):
         i += 1
 
     for href in replicas:
-        print href
+        #print href
         r1 = requests.get(href, headers=headers)
         xml_2 = ET.fromstring(r1.content)
         replication_state = 'None'
@@ -98,24 +92,14 @@ def replications(username, password, url, org):
     api_url = 'https://' + url + '-vcd.vchs.vmware.com'
     password = password
     org = org
-    #outfile = args.f
 
     authtoken, api_url = session_auth(user, password, api_url, org)
-    if authtoken is None or api_url  is None:
-        exit('cannot authenticate for user %s to org %s' % (user.upper(), org.upper()))
-    #print authtoken
-
+    if authtoken is None or api_url is None:
+        # exit('cannot authenticate for user %s to org %s' % (user.upper(), org.upper()))
+        return 401
     (org_name, org1) = get_org(authtoken, api_url, org)
-    org_id = org1.split('/')[-1]
+    #org_id = org1.split('/')[-1]
 
-    #print "getting all replicas... May take a while..."
     replicas = get_replications(authtoken, org1)
-    # print tabulate(replicas, tablefmt="grid", headers=["VM_Name", "replication_HREF", 'status', rpo,
-    # 'http_code', 'TransferStartTime', 'TransferSeconds', 'TransferBytes'])
-    #print "export csv..."
-    #with open(outfile, 'wb') as csv_file:
-    #    writer = csv.writer(csv_file)
-    #    for i in replicas:
-    #        print i
-    #        writer.writerow(i)
+
     return replicas

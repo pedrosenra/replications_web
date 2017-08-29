@@ -1,5 +1,5 @@
 from flask import render_template, flash, redirect, request, url_for, g, session
-from app import app
+from rep_app import app
 import replication
 import json
 
